@@ -1,5 +1,6 @@
 // ============================================
 // THE STASH — App Logic
+// Add Item + Search + Edit system
 // ============================================
 
 let currentScreen = 'welcome';
@@ -9,11 +10,18 @@ let appState = {
 };
 
 const backBtn = document.getElementById('backBtn');
+const itemModal = document.getElementById('itemModal');
+const itemForm = document.getElementById('itemForm');
+const itemTargetScreen = document.getElementById('itemTargetScreen');
+const itemCategory = document.getElementById('itemCategory');
+const itemDescription = document.getElementById('itemDescription');
+const itemPrice = document.getElementById('itemPrice');
 
 document.addEventListener('DOMContentLoaded', () => {
     loadStateFromStorage();
     displayQuote();
     setupEventListeners();
+    injectReceiptTools();
     renderScreen('welcome');
 });
 
@@ -23,7 +31,6 @@ function setupEventListeners() {
     });
 
     backBtn.addEventListener('click', () => {
-        // Detail screens go back to their menu; menus go back to welcome
         const backMap = {
             budgetCombined: 'budget',
             budgetMax: 'budget',
@@ -45,12 +52,39 @@ function setupEventListeners() {
             handleCheckboxChange(e.target);
         }
     });
+
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('add-item-btn')) {
+            openItemModal(e.target.dataset.screen);
+        }
+
+        if (e.target.classList.contains('edit-price-btn')) {
+            handleEditPrice(e.target);
+        }
+
+        if (e.target.id === 'closeItemModal' || e.target.id === 'cancelItemModal') {
+            closeItemModal();
+        }
+
+        if (e.target === itemModal) {
+            closeItemModal();
+        }
+    });
+
+    document.addEventListener('input', (e) => {
+        if (e.target.classList.contains('receipt-search')) {
+            filterReceiptList(e.target.dataset.screen, e.target.value);
+        }
+    });
+
+    itemForm.addEventListener('submit', handleAddItemSubmit);
 }
 
 function renderScreen(screenName) {
     currentScreen = screenName;
 
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
     const screen = document.getElementById(screenName + 'Screen');
     if (screen) screen.classList.add('active');
 
@@ -67,20 +101,62 @@ function renderScreen(screenName) {
         case 'groceriesBukhosi': renderGroceryDetail('bukhosi'); break;
     }
 
-    document.querySelector('.app-main').scrollTop = 0;
+    const main = document.querySelector('.app-main');
+    if (main) main.scrollTop = 0;
+
     saveStateToStorage();
+}
+
+function injectReceiptTools() {
+    const receiptScreens = [
+        'budgetCombined',
+        'budgetMax',
+        'budgetCarrie',
+        'budgetBukhosi',
+        'groceriesHome',
+        'groceriesBukhosi'
+    ];
+
+    receiptScreens.forEach(screenName => {
+        const screen = document.getElementById(screenName + 'Screen');
+        if (!screen) return;
+
+        const paper = screen.querySelector('.receipt-paper');
+        if (!paper) return;
+
+        if (paper.querySelector('.receipt-tools')) return;
+
+        const tools = document.createElement('div');
+        tools.className = 'receipt-tools';
+        tools.innerHTML = `
+            <input 
+                type="text" 
+                class="receipt-search" 
+                data-screen="${screenName}" 
+                placeholder="SEARCH THIS RECEIPT..."
+            >
+            <button type="button" class="receipt-tool-btn add-item-btn" data-screen="${screenName}">
+                NEW ITEM
+            </button>
+        `;
+
+        const head = paper.querySelector('.receipt-head');
+        if (head) {
+            head.insertAdjacentElement('afterend', tools);
+        }
+    });
 }
 
 // ---------- Menus ----------
 function renderBudgetMenu() {
     const maxTotal = getTotal(appState.budget.max);
     const carrieTotal = getTotal(appState.budget.carrie);
-    const bukhositotal = getTotal(appState.budget.bukhosi);
-    const combinedTotal = maxTotal + carrieTotal + bukhositotal;
+    const bukhosiTotal = getTotal(appState.budget.bukhosi);
+    const combinedTotal = maxTotal + carrieTotal + bukhosiTotal;
 
     setText('maxTotal', fmt(maxTotal));
     setText('carrieTotal', fmt(carrieTotal));
-    setText('bukhositotal', fmt(bukhositotal));
+    setText('bukhositotal', fmt(bukhosiTotal));
     setText('combinedTotal', fmt(combinedTotal));
 }
 
@@ -111,7 +187,7 @@ function renderBudgetList(listId, items, scope) {
     const list = document.getElementById(listId);
     list.innerHTML = '';
 
-    if (items.length === 0) {
+    if (!items.length) {
         list.innerHTML = '<div class="receipt-empty">NOTHING HERE YET.</div>';
         return;
     }
@@ -134,10 +210,14 @@ function renderBudgetList(listId, items, scope) {
 function buildBudgetRow(item, scope) {
     const row = document.createElement('div');
     row.className = 'receipt-item' + (item.paid ? ' checked' : '');
+    row.dataset.search = `${item.category} ${item.name}`.toLowerCase();
 
     let pill = '';
+    let personRef = scope;
+
     if (scope === 'combined' && item.person) {
         pill = `<span class="person-pill">${item.person}</span>`;
+        personRef = item.person;
     }
 
     row.innerHTML = `
@@ -148,7 +228,12 @@ function buildBudgetRow(item, scope) {
             <div class="receipt-item-name">${pill}${item.name}</div>
             <div class="receipt-item-meta">${item.category}</div>
         </span>
-        <span class="receipt-item-price">${fmt(item.amount)}</span>
+        <span class="receipt-item-actions">
+            <span class="receipt-item-price">${fmt(item.amount)}</span>
+            <button type="button" class="edit-price-btn" data-kind="budget" data-scope="${personRef}" data-id="${item.id}">
+                EDIT
+            </button>
+        </span>
     `;
     return row;
 }
@@ -157,7 +242,6 @@ function updateBudgetTotals(scope, items) {
     const total = items.reduce((s, i) => s + i.amount, 0);
     const paid = items.filter(i => i.paid).reduce((s, i) => s + i.amount, 0);
     const outstanding = total - paid;
-
     setText(scope + 'Paid', fmt(paid));
     setText(scope + 'Outstanding', fmt(outstanding));
 }
@@ -169,21 +253,27 @@ function renderGroceryDetail(type) {
     const list = document.getElementById(listId);
     list.innerHTML = '';
 
+    if (!categories.length) {
+        list.innerHTML = '<div class="receipt-empty">NOTHING HERE YET.</div>';
+        return;
+    }
+
     categories.forEach(cat => {
         const catEl = document.createElement('div');
         catEl.className = 'receipt-cat';
         catEl.textContent = cat.category;
         list.appendChild(catEl);
 
-        cat.items.forEach(item => list.appendChild(buildGroceryRow(item, type)));
+        cat.items.forEach(item => list.appendChild(buildGroceryRow(item, type, cat.category)));
     });
 
     updateGroceryTotals(type, categories);
 }
 
-function buildGroceryRow(item, type) {
+function buildGroceryRow(item, type, category) {
     const row = document.createElement('div');
     row.className = 'receipt-item' + (item.purchased ? ' checked' : '');
+    row.dataset.search = `${category} ${item.name}`.toLowerCase();
 
     row.innerHTML = `
         <span class="receipt-checkbox-wrap">
@@ -191,9 +281,14 @@ function buildGroceryRow(item, type) {
         </span>
         <span class="receipt-item-body">
             <div class="receipt-item-name">${item.name}</div>
-            <div class="receipt-item-meta">${item.qty} &times; ${fmt(item.price)}</div>
+            <div class="receipt-item-meta">${item.qty} × ${fmt(item.price)}</div>
         </span>
-        <span class="receipt-item-price">${fmt(item.total)}</span>
+        <span class="receipt-item-actions">
+            <span class="receipt-item-price">${fmt(item.total)}</span>
+            <button type="button" class="edit-price-btn" data-kind="grocery" data-type="${type}" data-id="${item.id}">
+                EDIT
+            </button>
+        </span>
     `;
     return row;
 }
@@ -211,6 +306,183 @@ function updateGroceryTotals(type, categories) {
     setText(remainingId, fmt(remaining));
 }
 
+// ---------- Add item ----------
+function openItemModal(screenName) {
+    itemTargetScreen.value = screenName;
+    itemCategory.value = '';
+    itemDescription.value = '';
+    itemPrice.value = '';
+    itemModal.classList.remove('hidden');
+    itemModal.setAttribute('aria-hidden', 'false');
+    itemCategory.focus();
+}
+
+function closeItemModal() {
+    itemModal.classList.add('hidden');
+    itemModal.setAttribute('aria-hidden', 'true');
+    itemForm.reset();
+}
+
+function handleAddItemSubmit(e) {
+    e.preventDefault();
+
+    const screenName = itemTargetScreen.value;
+    const category = itemCategory.value.trim();
+    const description = itemDescription.value.trim();
+    const price = Number(itemPrice.value);
+
+    if (!screenName || !category || !description || Number.isNaN(price)) return;
+
+    if (screenName.startsWith('groceries')) {
+        const type = screenName === 'groceriesHome' ? 'home' : 'bukhosi';
+        addGroceryItem(type, category, description, price);
+    } else if (screenName.startsWith('budget')) {
+        addBudgetItem(screenName, category, description, price);
+    }
+
+    closeItemModal();
+    renderScreen(screenName);
+}
+
+function addBudgetItem(screenName, category, description, amount) {
+    let target = null;
+
+    if (screenName === 'budgetMax') target = 'max';
+    if (screenName === 'budgetCarrie') target = 'carrie';
+    if (screenName === 'budgetBukhosi') target = 'bukhosi';
+
+    // safest default for Combined: add to Max so it appears immediately in combined too
+    if (screenName === 'budgetCombined') target = 'max';
+
+    if (!target) return;
+
+    const nextId = getNextBudgetId();
+
+    appState.budget[target].push({
+        id: nextId,
+        category: category.toUpperCase(),
+        name: description.toUpperCase(),
+        amount: Number(amount),
+        paid: false
+    });
+}
+
+function addGroceryItem(type, category, description, price) {
+    const categoryName = category.toUpperCase();
+    const nextItemId = getNextGroceryItemId(type);
+
+    let categoryBlock = appState.groceries[type].find(c => c.category === categoryName);
+
+    if (!categoryBlock) {
+        const nextCatId = getNextGroceryCategoryId(type);
+        categoryBlock = {
+            id: nextCatId,
+            category: categoryName,
+            items: []
+        };
+        appState.groceries[type].push(categoryBlock);
+    }
+
+    categoryBlock.items.push({
+        id: nextItemId,
+        name: description,
+        qty: 1,
+        price: Number(price),
+        total: Number(price),
+        purchased: false
+    });
+}
+
+// ---------- Search ----------
+function filterReceiptList(screenName, query) {
+    const section = document.getElementById(screenName + 'Screen');
+    if (!section) return;
+
+    const normalized = query.trim().toLowerCase();
+    const list = section.querySelector('.receipt-list');
+    if (!list) return;
+
+    const items = [...list.querySelectorAll('.receipt-item')];
+    const cats = [...list.querySelectorAll('.receipt-cat')];
+
+    if (!normalized) {
+        items.forEach(el => el.style.display = '');
+        cats.forEach(el => el.style.display = '');
+        return;
+    }
+
+    items.forEach(el => {
+        const match = (el.dataset.search || '').includes(normalized);
+        el.style.display = match ? '' : 'none';
+    });
+
+    // hide category headers with no visible items after them
+    cats.forEach(cat => {
+        let next = cat.nextElementSibling;
+        let hasVisibleItems = false;
+
+        while (next && !next.classList.contains('receipt-cat')) {
+            if (next.classList.contains('receipt-item') && next.style.display !== 'none') {
+                hasVisibleItems = true;
+                break;
+            }
+            next = next.nextElementSibling;
+        }
+
+        cat.style.display = hasVisibleItems ? '' : 'none';
+    });
+}
+
+// ---------- Edit price ----------
+function handleEditPrice(button) {
+    const kind = button.dataset.kind;
+    const itemId = button.dataset.id;
+
+    const currentPriceText = button.previousElementSibling?.textContent || '';
+    const currentNumber = Number(currentPriceText.replace(/[R,\s]/g, ''));
+
+    const userInput = prompt('Enter new price:', Number.isNaN(currentNumber) ? '' : currentNumber);
+    if (userInput === null) return;
+
+    const newPrice = Number(userInput);
+    if (Number.isNaN(newPrice)) return;
+
+    if (kind === 'budget') {
+        const scope = button.dataset.scope;
+        const item = appState.budget[scope]?.find(i => String(i.id) === String(itemId));
+        if (!item) return;
+        item.amount = newPrice;
+
+        // rerender correct screen
+        if (currentScreen === 'budgetCombined') renderCombinedBudget();
+        else renderBudgetDetail(scope);
+
+        if (scope === 'max' || scope === 'carrie' || scope === 'bukhosi') {
+            renderBudgetMenu();
+        }
+    }
+
+    if (kind === 'grocery') {
+        const type = button.dataset.type;
+        let found = null;
+
+        appState.groceries[type].forEach(cat => {
+            const item = cat.items.find(i => String(i.id) === String(itemId));
+            if (item) found = item;
+        });
+
+        if (!found) return;
+
+        found.price = newPrice;
+        found.total = found.qty * newPrice;
+
+        renderGroceryDetail(type);
+        renderGroceriesMenu();
+    }
+
+    saveStateToStorage();
+}
+
 // ---------- Checkbox handling ----------
 function handleCheckboxChange(checkbox) {
     const id = checkbox.dataset.id;
@@ -222,13 +494,11 @@ function handleCheckboxChange(checkbox) {
             const all = [...appState.budget.max, ...appState.budget.carrie, ...appState.budget.bukhosi];
             const item = all.find(i => i.id == id);
             if (item) item.paid = checkbox.checked;
-
             checkbox.closest('.receipt-item').classList.toggle('checked', checkbox.checked);
             updateBudgetTotals('combined', all);
         } else {
             const item = appState.budget[person].find(i => i.id == id);
             if (item) item.paid = checkbox.checked;
-
             checkbox.closest('.receipt-item').classList.toggle('checked', checkbox.checked);
             updateBudgetTotals(person, appState.budget[person]);
         }
@@ -272,6 +542,31 @@ function fmt(amount) {
 function setText(id, text) {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
+}
+
+function getNextBudgetId() {
+    const allIds = [
+        ...appState.budget.max,
+        ...appState.budget.carrie,
+        ...appState.budget.bukhosi
+    ].map(i => i.id);
+    return allIds.length ? Math.max(...allIds) + 1 : 1;
+}
+
+function getNextGroceryCategoryId(type) {
+    const ids = appState.groceries[type].map(c => c.id || 0);
+    return ids.length ? Math.max(...ids) + 1 : 1;
+}
+
+function getNextGroceryItemId(type) {
+    const itemIds = [];
+    appState.groceries[type].forEach(cat => {
+        cat.items.forEach(item => {
+            const numeric = parseInt(String(item.id).replace(/[^\d]/g, ''), 10);
+            if (!Number.isNaN(numeric)) itemIds.push(numeric);
+        });
+    });
+    return `n${itemIds.length ? Math.max(...itemIds) + 1 : 1}`;
 }
 
 // ---------- Storage ----------
