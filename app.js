@@ -628,3 +628,18 @@ function stopScanner() {
         });
     }
 }
+
+function handleScannedBarcode(barcode) {
+    // SIMPLE VERSION (safe + no API issues)
+
+    let description = prompt("Product name (scan detected):");
+    let price = prompt("Price:");
+
+    if (!description || !price) return;
+
+    addItem({
+        category: "Groceries",
+        description: description,
+        price: parseFloat(price)
+    });
+}
