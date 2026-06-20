@@ -377,9 +377,14 @@ button {
 /* ============ RECEIPT SCREENS ============ */
 .receipt-screen {
     padding: 24px 16px 40px;
-    display: flex;
     justify-content: center;
 }
+
+/* ✅ Only show receipt when active */
+.receipt-screen.active {
+    display: flex;
+}
+
 
 .receipt-paper {
     width: 100%;
