@@ -824,3 +824,9 @@ input:focus-visible {
 .modal-btn:hover {
     opacity: 0.9;
 }
+
+#scanner {
+    margin-top: 10px;
+    border-radius: 10px;
+    overflow: hidden;
+}
