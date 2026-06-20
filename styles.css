@@ -1,0 +1,665 @@
+/* ============================================
+   THE STASH — Budget & Groceries
+   Design: bold mono, big type, dry humor.
+   Palette: near-black / off-white / one gray.
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --ink: #0a0a0a;
+    --paper: #faf9f6;
+    --paper-dim: #f0eee8;
+    --gray: #8a8a85;
+    --gray-line: #d8d6d0;
+    --white: #ffffff;
+
+    --max: #0a0a0a;
+    --carrie: #0a0a0a;
+    --bukhosi: #0a0a0a;
+    --combined: #0a0a0a;
+    --home: #0a0a0a;
+
+    --display: 'Archivo Black', 'Archivo', sans-serif;
+    --body: 'Archivo', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+button {
+    font-family: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* ============ APP SHELL ============ */
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+/* ============ HEADER ============ */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 3px solid var(--ink);
+    background: var(--paper);
+    position: relative;
+    z-index: 20;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--body);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    padding: 8px 10px;
+    visibility: hidden;
+    transition: opacity 0.15s ease;
+}
+
+.back-btn.show {
+    visibility: visible;
+}
+
+.back-icon {
+    font-size: 16px;
+}
+
+.brand-mark {
+    cursor: pointer;
+}
+
+.brand-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--display);
+    font-size: 15px;
+    letter-spacing: -0.05em;
+}
+
+.header-spacer {
+    width: 60px;
+}
+
+/* ============ MAIN SCROLL ============ */
+.app-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+    animation: riseIn 0.35s ease;
+}
+
+@keyframes riseIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ WELCOME ============ */
+.welcome-screen {
+    padding: 0;
+}
+
+.hero {
+    padding: 32px 24px 8px;
+    position: relative;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    margin-bottom: 14px;
+}
+
+.hero-headline {
+    font-family: var(--display);
+    font-size: 52px;
+    line-height: 0.96;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 2;
+}
+
+.hero-sub {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 280px;
+    letter-spacing: 0.01em;
+    position: relative;
+    z-index: 2;
+    text-transform: uppercase;
+}
+
+.squiggle-wrap {
+    position: absolute;
+    top: -10px;
+    right: -70px;
+    width: 200px;
+    height: 200px;
+    opacity: 0.85;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.squiggle-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.squiggle-path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.welcome-buttons {
+    display: flex;
+    flex-direction: column;
+    border-top: 3px solid var(--ink);
+    margin-top: 24px;
+}
+
+.welcome-btn {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--ink);
+    transition: background 0.15s ease;
+    text-align: left;
+}
+
+.welcome-btn:active,
+.welcome-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+.welcome-btn:hover .welcome-btn-num {
+    color: var(--paper);
+    opacity: 0.5;
+}
+
+.welcome-btn-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray);
+    min-width: 24px;
+}
+
+.welcome-btn-text {
+    font-family: var(--display);
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    flex: 1;
+}
+
+.welcome-btn-arrow {
+    font-size: 20px;
+    font-weight: 800;
+    transition: transform 0.15s ease;
+}
+
+.welcome-btn:hover .welcome-btn-arrow {
+    transform: translateX(4px);
+}
+
+.quote-strip {
+    margin: 28px 24px 32px;
+    padding: 20px;
+    border: 2px solid var(--ink);
+    position: relative;
+}
+
+.quote-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    margin-bottom: 10px;
+}
+
+.daily-quote {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+    min-height: 44px;
+    margin-bottom: 14px;
+}
+
+.new-quote-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 2px;
+}
+
+/* ============ MENU SCREENS ============ */
+.menu-screen {
+    padding: 28px 24px 32px;
+}
+
+.screen-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    margin-bottom: 10px;
+}
+
+.screen-headline {
+    font-family: var(--display);
+    font-size: 38px;
+    line-height: 1.0;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+}
+
+.menu-list {
+    border-top: 3px solid var(--ink);
+}
+
+.menu-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 18px 4px;
+    border-bottom: 1px solid var(--ink);
+    text-align: left;
+    transition: background 0.15s ease, padding-left 0.15s ease;
+}
+
+.menu-row:hover {
+    background: var(--paper-dim);
+    padding-left: 12px;
+}
+
+.menu-row-tag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--display);
+    font-size: 14px;
+}
+
+.menu-row-combined .menu-row-tag {
+    background: transparent;
+    border: 2px solid var(--ink);
+    color: var(--ink);
+}
+
+.menu-row-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.menu-row-title {
+    font-family: var(--display);
+    font-size: 18px;
+    letter-spacing: 0.01em;
+}
+
+.menu-row-sub {
+    font-family: var(--body);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gray);
+    font-style: italic;
+}
+
+.menu-row-amount {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ============ RECEIPT SCREENS ============ */
+.receipt-screen {
+    padding: 24px 16px 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.receipt-paper {
+    width: 100%;
+    max-width: 420px;
+    background: var(--white);
+    border: 2px solid var(--ink);
+    position: relative;
+}
+
+.receipt-head {
+    padding: 24px 20px 18px;
+    text-align: center;
+}
+
+.receipt-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--display);
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.receipt-title {
+    font-family: var(--display);
+    font-size: 22px;
+    letter-spacing: 0.01em;
+    margin-bottom: 4px;
+}
+
+.receipt-tagline {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gray);
+    font-style: italic;
+}
+
+/* Perforated divider, like a real receipt tear */
+.receipt-perf {
+    height: 0;
+    border-top: 2px dashed var(--ink);
+    margin: 0 16px;
+    opacity: 0.5;
+}
+
+.receipt-list {
+    padding: 6px 0;
+    max-height: 48vh;
+    overflow-y: auto;
+}
+
+.receipt-cat {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    background: var(--ink);
+    padding: 7px 20px;
+}
+
+.receipt-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 20px;
+    border-bottom: 1px dotted var(--gray-line);
+    transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.receipt-item.checked {
+    background: var(--paper-dim);
+}
+
+.receipt-checkbox-wrap {
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.receipt-checkbox {
+    width: 22px;
+    height: 22px;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid var(--ink);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    background: var(--white);
+    flex-shrink: 0;
+}
+
+.receipt-checkbox:checked {
+    background: var(--ink);
+}
+
+.receipt-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -54%);
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.receipt-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.receipt-item-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+    word-break: break-word;
+}
+
+.receipt-item.checked .receipt-item-name {
+    text-decoration: line-through;
+    color: var(--gray);
+}
+
+.receipt-item-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gray);
+}
+
+.person-pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 1px 6px;
+    border: 1px solid var(--ink);
+    border-radius: 3px;
+    margin-right: 6px;
+    text-transform: uppercase;
+}
+
+.receipt-item-price {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    padding-top: 1px;
+}
+
+.receipt-item.checked .receipt-item-price {
+    color: var(--gray);
+}
+
+.receipt-totals {
+    padding: 16px 20px 6px;
+}
+
+.receipt-total-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 6px 0;
+    color: var(--gray);
+}
+
+.receipt-total-main {
+    font-size: 17px;
+    color: var(--ink);
+    border-top: 2px solid var(--ink);
+    padding-top: 12px;
+    margin-top: 4px;
+}
+
+.receipt-footer-text {
+    text-align: center;
+    font-family: var(--display);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    padding: 14px 0 22px;
+    color: var(--ink);
+}
+
+/* Empty state */
+.receipt-empty {
+    padding: 40px 20px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gray);
+}
+
+/* ============ FOOTER (signature skyline) ============ */
+.app-footer {
+    background: var(--ink);
+    color: var(--paper);
+    flex-shrink: 0;
+}
+
+.skyline {
+    width: 100%;
+    height: 36px;
+    color: var(--paper);
+    display: block;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px 14px;
+    border-top: 1px solid rgba(250,249,246,0.15);
+}
+
+.footer-copy {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(250,249,246,0.5);
+    letter-spacing: 0.02em;
+}
+
+.footer-tag {
+    font-family: var(--display);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+}
+
+/* ============ SCROLLBARS ============ */
+.receipt-list::-webkit-scrollbar,
+.app-main::-webkit-scrollbar {
+    width: 5px;
+}
+
+.receipt-list::-webkit-scrollbar-track,
+.app-main::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.receipt-list::-webkit-scrollbar-thumb,
+.app-main::-webkit-scrollbar-thumb {
+    background: var(--gray-line);
+}
+
+/* ============ RESPONSIVE ============ */
+@media (min-width: 480px) {
+    .hero-headline { font-size: 58px; }
+}
+
+@media (max-width: 360px) {
+    .hero-headline { font-size: 44px; }
+    .welcome-btn-text { font-size: 22px; }
+    .screen-headline { font-size: 32px; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .screen.active { animation: none; }
+    * { transition: none !important; }
+}
+
+/* Keyboard focus visibility */
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+}
