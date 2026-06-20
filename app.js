@@ -590,3 +590,41 @@ if ("serviceWorker" in navigator) {
         .then(() => console.log("Service Worker Registered"))
         .catch(err => console.error("SW failed:", err));
 }
+
+const scanBtn = document.getElementById("scanBtn");
+const scannerDiv = document.getElementById("scanner");
+
+let html5QrCode;
+
+scanBtn.addEventListener("click", () => {
+    scannerDiv.style.display = "block";
+
+    html5QrCode = new Html5Qrcode("scanner");
+
+    Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+            html5QrCode.start(
+                devices[0].id,
+                { fps: 10, qrbox: 250 },
+                onScanSuccess
+            );
+        }
+    });
+});
+
+function onScanSuccess(decodedText) {
+    console.log("Scanned:", decodedText);
+
+    stopScanner();
+
+    // 👉 Now handle product lookup OR just pre-fill
+    handleScannedBarcode(decodedText);
+}
+
+function stopScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            scannerDiv.style.display = "none";
+        });
+    }
+}
