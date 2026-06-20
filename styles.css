@@ -661,3 +661,166 @@ input:focus-visible {
     outline: 3px solid var(--ink);
     outline-offset: 2px;
 }
+
+/* ============ RECEIPT TOOLS ============ */
+.receipt-tools {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-line);
+    background: var(--white);
+}
+
+.receipt-search {
+    flex: 1;
+    min-width: 0;
+    border: 2px solid var(--ink);
+    background: var(--white);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 10px 12px;
+    outline: none;
+}
+
+.receipt-tool-btn {
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 10px 12px;
+    white-space: nowrap;
+}
+
+.receipt-tool-btn:hover {
+    background: var(--paper);
+    color: var(--ink);
+}
+
+/* ============ INLINE EDIT BUTTON ============ */
+.receipt-item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.edit-price-btn {
+    border-bottom: 2px solid var(--ink);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    padding-bottom: 1px;
+}
+
+.receipt-item.checked .edit-price-btn {
+    color: var(--gray);
+    border-color: var(--gray);
+}
+
+/* ============ MODAL ============ */
+.hidden {
+    display: none !important;
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 10, 0.45);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--white);
+    border: 2px solid var(--ink);
+    padding: 16px;
+}
+
+.modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-title {
+    font-family: var(--display);
+    font-size: 20px;
+    letter-spacing: 0.02em;
+}
+
+.modal-close {
+    font-family: var(--display);
+    font-size: 22px;
+    line-height: 1;
+    color: var(--ink);
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.modal-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.modal-input {
+    border: 2px solid var(--ink);
+    background: var(--white);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.modal-btn {
+    flex: 1;
+    border: 2px solid var(--ink);
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.modal-btn-solid {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+.modal-btn-ghost {
+    background: var(--white);
+    color: var(--ink);
+}
+
+.modal-btn:hover {
+    opacity: 0.9;
+}
